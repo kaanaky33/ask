@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Yaren & Kaan</title>
+<style>
+:root{
+  --bg-x:50%;
+  --bg-y:50%;
+}
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:system-ui,"Segoe UI",sans-serif;
+}
+body{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#020617;
+  color:#f9fafb;
+  overflow:hidden;
+  position:relative;
+  padding:20px;
+}
+/* Arka plan: siz, blur + hafif parallax */
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background:url("bg.jpg") center/cover no-repeat;
+  background-position:var(--bg-x) var(--bg-y);
+  filter:blur(24px) brightness(0.35) saturate(1.05);
+  transform:scale(1.1);
+  z-index:-2;
+}
+body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  background:
+    radial-gradient(circle at top,rgba(248,113,113,0.35),transparent 55%),
+    linear-gradient(to bottom,rgba(15,23,42,0.85),rgba(15,23,42,0.96));
+  z-index:-1;
+}
+
+/* Ortadaki kart */
+.card{
+  position:relative;
+  max-width:700px;
+  width:100%;
+  background:rgba(15,23,42,0.92);
+  border-radius:24px;
+  padding:26px 26px 20px;
+  text-align:center;
+  box-shadow:0 24px 70px rgba(0,0,0,0.85);
+  border:1px solid rgba(248,113,113,0.5);
+  overflow:hidden;
+}
+.top-label{
+  font-size:.78rem;
+  text-transform:uppercase;
+  opacity:.8;
+  margin-bottom:4px;
+  letter-spacing:.12em;
+}
+.names{
+  font-size:1.05rem;
+  font-weight:600;
+  margin-bottom:8px;
+}
+.names span{color:#fb7185;}
+.badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-size:.75rem;
+  padding:4px 10px;
+  border-radius:999px;
+  background:rgba(248,113,113,0.12);
+  color:#fecaca;
+  margin-bottom:8px;
+}
+.badge .heart{animation:pulse 1s infinite;}
+h1{
+  font-size:1.4rem;
+  line-height:1.4;
+  margin-bottom:8px;
+}
+#questionText{min-height:3.1em;}
+.sub{
+  font-size:.8rem;
+  opacity:.85;
+  margin-bottom:12px;
+}
+.since{
+  font-size:.7rem;
+  opacity:.75;
+  margin-bottom:10px;
+}
+.btn-row{
+  margin-top:6px;
+  position:relative;
+  height:110px;
+}
+button{
+  border:none;
+  cursor:pointer;
+  padding:12px 22px;
+  font-size:.95rem;
+  border-radius:999px;
+  transition:.15s;
+  white-space:nowrap;
+}
+button:active{transform:scale(.96);}
+.btn-yes{
+  background:linear-gradient(135deg,#ec4899,#f97316);
+  color:#fff;
+  box-shadow:0 10px 25px rgba(236,72,153,.45);
+}
+.btn-yes:hover{
+  box-shadow:0 14px 35px rgba(236,72,153,.8);
+  transform:translateY(-1px) scale(1.02);
+}
+.btn-no{
+  background:#e5e7eb;
+  color:#111827;
+  position:absolute;
+  top:50%;
+  left:65%;
+  transform:translate(-50%,-50%);
+}
+#result{
+  margin-top:14px;
+  font-size:.95rem;
+  font-weight:600;
+  display:none;
+}
+.psycho{
+  margin-top:6px;
+  font-size:.82rem;
+  color:#fecaca;
+  display:none;
+}
+.timer,
+.love-score{
+  margin-top:6px;
+  font-size:.78rem;
+  opacity:.85;
+}
+
+/* Kenarlardaki fotoğraflar */
+.side-gallery{
+  position:fixed;
+  top:50%;
+  transform:translateY(-50%);
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  z-index:0;
+  pointer-events:none;
+}
+.side-gallery.left{
+  left:10px;
+}
+.side-gallery.right{
+  right:10px;
+}
+.side-gallery img{
+  width:90px;
+  height:120px;
+  object-fit:cover;
+  border-radius:18px;
+  filter:brightness(0.95);
+  box-shadow:0 10px 30px rgba(0,0,0,0.6);
+  opacity:.95;
+}
+
+/* Hearts */
+.hearts-container{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  overflow:hidden;
+  z-index:9999;
+}
+.heart-fall{
+  position:absolute;
+  font-size:18px;
+  animation:fall 4s linear forwards;
+  filter:drop-shadow(0 0 6px rgba(248,113,113,.7));
+}
+.cursor-heart{
+  position:fixed;
+  font-size:14px;
+  pointer-events:none;
+  animation:cursorHeart .9s ease-out forwards;
+  filter:drop-shadow(0 0 4px rgba(248,113,113,.8));
+}
+
+/* Player */
+.player{
+  margin-top:20px;
+  background:rgba(10,10,15,0.9);
+  padding:16px 18px 12px;
+  border-radius:20px;
+  box-shadow:0 10px 40px rgba(0,0,0,.6);
+}
+.p-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  margin-bottom:4px;
+}
+.p-title{font-size:.9rem;}
+.p-artist{font-size:.75rem;color:#34d399;opacity:.85;}
+.p-caption{
+  font-size:.75rem;
+  opacity:.85;
+  margin-top:4px;
+}
+.cover{
+  width:100%;
+  height:200px;
+  background:url("bg.jpg") center/cover no-repeat;
+  border-radius:16px;
+  margin:10px 0 10px;
+  filter:blur(10px) brightness(.9) saturate(1.05);
+  overflow:hidden;
+}
+.progress{
+  width:100%;
+  height:6px;
+  border-radius:999px;
+  background:#1f2937;
+  position:relative;
+  cursor:pointer;
+  margin:8px 0;
+}
+.bar{
+  height:100%;
+  background:#34d399;
+  border-radius:999px;
+  width:0%;
+  transition:width .1s;
+}
+.time-row{
+  display:flex;
+  justify-content:space-between;
+  font-size:.7rem;
+  opacity:.7;
+}
+.controls{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:30px;
+  margin:10px 0 4px;
+}
+.btn-icon{
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  background:#111827;
+  border:none;
+  color:#fff;
+  font-size:1.2rem;
+  cursor:pointer;
+  transition:.15s;
+}
+.btn-icon:hover{
+  background:#1f2937;
+  transform:scale(1.08);
+}
+.eq{
+  height:42px;
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  gap:6px;
+  margin-top:4px;
+  opacity:.18;
+}
+.eq div{
+  width:6px;
+  background:#34d399;
+  border-radius:4px;
+  animation:eq 1s linear infinite;
+}
+.eq div:nth-child(2){animation-delay:.2s;}
+.eq div:nth-child(3){animation-delay:.3s;}
+.eq div:nth-child(4){animation-delay:.4s;}
+.eq div:nth-child(5){animation-delay:.5s;}
+
+/* IQ link butonu */
+.iq-link{
+  margin-top:10px;
+}
+.iq-link a{
+  display:inline-block;
+  padding:8px 16px;
+  border-radius:999px;
+  background:#4b5563;
+  color:#f9fafb;
+  text-decoration:none;
+  font-size:.8rem;
+  opacity:.9;
+  transition:.15s;
+}
+.iq-link a:hover{
+  background:#9f1239;
+  opacity:1;
+  transform:translateY(-1px);
+}
+
+/* Popup modal */
+.popup-backdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(15,23,42,0.85);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:9998;
+}
+.popup{
+  background:#020617;
+  border-radius:18px;
+  padding:18px 18px 14px;
+  max-width:320px;
+  width:90%;
+  text-align:center;
+  border:1px solid rgba(248,113,113,0.6);
+  box-shadow:0 20px 60px rgba(0,0,0,0.85);
+}
+.popup h2{
+  font-size:1.05rem;
+  margin-bottom:6px;
+}
+.popup p{
+  font-size:.82rem;
+  opacity:.9;
+  margin-bottom:12px;
+}
+.popup button{
+  padding:8px 16px;
+  font-size:.85rem;
+  border-radius:999px;
+  background:linear-gradient(135deg,#22c55e,#16a34a);
+  color:#020617;
+  border:none;
+  cursor:pointer;
+}
+.popup.show{display:flex;}
+
+/* Kaan paneli */
+.admin-toggle{
+  position:fixed;
+  bottom:14px;
+  right:14px;
+  font-size:.7rem;
+  background:rgba(15,23,42,0.95);
+  border-radius:999px;
+  padding:6px 10px;
+  border:1px solid rgba(148,163,184,0.7);
+  cursor:pointer;
+  opacity:.9;
+  z-index:20;
+}
+.admin-panel{
+  position:fixed;
+  bottom:52px;
+  right:14px;
+  width:220px;
+  background:rgba(15,23,42,0.97);
+  border-radius:16px;
+  padding:10px 12px 10px;
+  border:1px solid rgba(148,163,184,0.7);
+  font-size:.75rem;
+  box-shadow:0 16px 40px rgba(0,0,0,0.85);
+  transform:translateY(16px);
+  opacity:0;
+  pointer-events:none;
+  transition:.18s;
+  z-index:19;
+}
+.admin-panel.show{
+  transform:translateY(0);
+  opacity:1;
+  pointer-events:auto;
+}
+.admin-panel h3{
+  font-size:.78rem;
+  margin-bottom:6px;
+}
+.mood-buttons{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-bottom:6px;
+}
+.mood-buttons button{
+  padding:4px 8px;
+  font-size:.7rem;
+  border-radius:999px;
+  border:1px solid rgba(148,163,184,0.7);
+  background:#020617;
+  color:#e5e7eb;
+  cursor:pointer;
+}
+.mood-text{
+  font-size:.7rem;
+  opacity:.9;
+}
+#moodDisplay{
+  margin-top:6px;
+  font-size:.72rem;
+  opacity:.8;
+}
+
+/* Animasyonlar */
+@keyframes eq{
+  0%{height:20%}
+  50%{height:100%}
+  100%{height:30%}
+}
+@keyframes fall{
+  0%{transform:translateY(-10vh) translateX(0) rotate(0);opacity:0;}
+  15%{opacity:1;}
+  100%{transform:translateY(110vh) translateX(40px) rotate(540deg);opacity:0;}
+}
+@keyframes cursorHeart{
+  0%{transform:translateY(0);opacity:1;}
+  100%{transform:translateY(-30px);opacity:0;}
+}
+@keyframes pulse{
+  0%,100%{transform:scale(1);}
+  50%{transform:scale(1.25);}
+}
+@keyframes shake{
+  10%,90%{transform:translate(-50%,-50%) translateX(-1px);}
+  20%,80%{transform:translate(-50%,-50%) translateX(2px);}
+  30%,50%,70%{transform:translate(-50%,-50%) translateX(-4px);}
+  40%,60%{transform:translate(-50%,-50%) translateX(4px);}
+}
+.shake{animation:shake .4s linear;}
+
+@media(max-width:900px){
+  .side-gallery{display:none;}
+}
+@media(max-width:600px){
+  .card{padding-inline:16px;}
+  h1{font-size:1.2rem;}
+  .btn-row{height:120px;}
+  button{padding-inline:18px;}
+}
+</style>
+</head>
+<body>
+<!-- Kenarlardaki fotoğraflar -->
+<div class="side-gallery left">
+  <img src="1.jpg" alt="">
+  <img src="2.jpg" alt="">
+</div>
+<div class="side-gallery right">
+  <img src="3.jpg" alt="">
+  <img src="4.jpg" alt="">
+</div>
+
+<div class="hearts-container" id="hearts"></div>
+
+<!-- Popup -->
+<div class="popup-backdrop" id="popup">
+  <div class="popup">
+    <h2>Resmî olarak yakalandın 🎯</h2>
+    <p>Bu tıklama geri alınmaz. Kayıtlara “Yaren = Kaan’ın” diye geçti. 😌</p>
+    <button id="popupOk">Tamam, kabul ediyorum ❤️</button>
+  </div>
+</div>
+
+<!-- Kaan paneli -->
+<div class="admin-toggle" id="adminToggle">Kaan Paneli</div>
+<div class="admin-panel" id="adminPanel">
+  <h3>Bugün Yaren modu?</h3>
+  <div class="mood-buttons">
+    <button data-mood="Mutlu ama kıskanç 😏">Mutlu</button>
+    <button data-mood="Tripli ama içten içe Kaan manyağı 😈">Tripli</button>
+    <button data-mood="Uykulu, kafası Kaan’da 🌙">Uykulu</button>
+    <button data-mood="Sadece Kaan’a gülen modda 😊">Tatlı</button>
+  </div>
+  <div class="mood-text" id="moodText">Seç: Bugünkü Yaren modu.</div>
+</div>
+
+<div class="card" id="card">
+  <div class="top-label">resmî başvuru</div>
+  <div class="names"><span>Yaren</span> ❤️ <span>Kaan</span></div>
+  <div class="badge"><span class="heart">❤</span><span>aşk modu aktif</span></div>
+
+  <h1 id="questionText"></h1>
+  <p class="sub">Kısa ve net cevap ver 😌</p>
+  <div class="since">18.10.2025'ten beri: <strong>Yaren = Kaan'ın</strong></div>
+
+  <div class="btn-row">
+    <button class="btn-yes" id="yesBtn">Evet</button>
+    <button class="btn-no" id="noBtn">Hayır</button>
+  </div>
+
+  <div id="result"></div>
+  <div class="psycho" id="psychoText">
+    Tamam, resmî: Yaren = Kaan'ın. Story’de yanlışlıkla bile başkasına kalp yok. 😈❤️
+  </div>
+  <div class="timer" id="timer"></div>
+  <div class="love-score" id="loveScore">Aşk Puanı: 0</div>
+
+  <!-- Player -->
+  <div class="player">
+    <div class="p-header">
+      <div class="p-title">Kaan – Yaren Edition</div>
+      <div class="p-artist">Sensiz Olmaz</div>
+    </div>
+    <div class="p-caption" id="playerCaption">Bu şarkı çalarken ekran sadece Kaan için kullanılabilir. 🎧</div>
+    <div class="cover"></div>
+
+    <div class="progress" id="progress"><div class="bar" id="bar"></div></div>
+    <div class="time-row"><span id="current">0:00</span><span id="duration">0:00</span></div>
+
+    <div class="controls">
+      <button class="btn-icon" id="play">▶</button>
+    </div>
+
+    <div class="eq" id="eq">
+      <div></div><div></div><div></div><div></div><div></div>
+    </div>
+  </div>
+
+  <!-- IQ Testine geç linki -->
+  <div class="iq-link">
+    <a href="iq.html">🧠 Yaren IQ Testine Geç</a>
+  </div>
+
+  <div id="moodDisplay"></div>
+</div>
+
+<audio id="audio" src="sarkı.mp3"></audio>
+
+<script>
+// ---- PLAYER ----
+const audio = document.getElementById('audio');
+const playBtn = document.getElementById('play');
+const bar = document.getElementById('bar');
+const progress = document.getElementById('progress');
+const current = document.getElementById('current');
+const duration = document.getElementById('duration');
+const eq = document.getElementById('eq');
+const playerCaption = document.getElementById('playerCaption');
+let playing = false;
+
+audio.addEventListener('loadeddata', () => {
+  duration.textContent = formatTime(audio.duration);
+});
+audio.addEventListener('timeupdate', () => {
+  current.textContent = formatTime(audio.currentTime);
+  if (audio.duration) {
+    bar.style.width = (audio.currentTime / audio.duration * 100) + "%";
+  }
+});
+audio.addEventListener('ended', () => {
+  playing = false;
+  playBtn.textContent = "▶";
+  eq.style.opacity = 0.18;
+});
+
+function formatTime(t){
+  let m = Math.floor(t/60),
+      s = Math.floor(t%60);
+  return m + ":" + (s<10 ? "0"+s : s);
+}
+
+playBtn.onclick = () => {
+  if (!playing) {
+    audio.play();
+    playBtn.textContent = "⏸";
+    eq.style.opacity = 1;
+    playing = true;
+    addScore(3);
+  } else {
+    audio.pause();
+    playBtn.textContent = "▶";
+    eq.style.opacity = 0.18;
+    playing = false;
+  }
+};
+
+progress.onclick = e => {
+  const rect = progress.getBoundingClientRect();
+  const p = (e.clientX - rect.left) / rect.width;
+  audio.currentTime = p * audio.duration;
+};
+
+// Dönen player sözleri
+const captions = [
+  "Bu şarkı çalarken ekran sadece Kaan için kullanılabilir. 🎧",
+  "Sensiz olmaz; bunu ikimiz de biliyoruz. 💘",
+  "Bu parça: gece düşünüp gündüz gülme modu. 🌙",
+  "Story + bu şarkı + Kaan = tam kombin. 😎"
+];
+let capIndex = 0;
+setInterval(() => {
+  capIndex = (capIndex + 1) % captions.length;
+  playerCaption.textContent = captions[capIndex];
+}, 5000);
+
+// ---- SORU YAZMA ----
+const qText =
+  "Yaren, benimle resmî sevgili moduna sonsuza kadar girer misin? 💘";
+const questionEl = document.getElementById("questionText");
+let typedIndex = 0;
+function typeQuestion(){
+  if(typedIndex <= qText.length){
+    questionEl.textContent = qText.slice(0, typedIndex);
+    typedIndex++;
+    setTimeout(typeQuestion, 40);
+  }
+}
+typeQuestion();
+
+// ---- AŞK MEKANİĞİ ----
+const yesBtn = document.getElementById("yesBtn");
+const noBtn = document.getElementById("noBtn");
+const resultEl = document.getElementById("result");
+const psychoEl = document.getElementById("psychoText");
+const heartsEl = document.getElementById("hearts");
+const popup = document.getElementById("popup");
+const popupOk = document.getElementById("popupOk");
+const timerEl = document.getElementById("timer");
+const loveScoreEl = document.getElementById("loveScore");
+
+const noTexts = [
+  "Yanlış buton o 😏",
+  "Sana 'hayır' yakışmıyor ❤️",
+  "Telefonu ters mi tuttun? 😘",
+  "Kıskanç modu açtırma 😈"
+];
+let noClickCount = 0;
+let allowCursorHearts = false;
+let yesTime = null;
+let timerInterval = null;
+let loveScore = 0;
+
+function addScore(n){
+  loveScore += n;
+  loveScoreEl.textContent = "Aşk Puanı: " + loveScore;
+}
+
+function moveNoButton(){
+  const rowRect = document.querySelector(".btn-row").getBoundingClientRect();
+  const btnRect = noBtn.getBoundingClientRect();
+  const maxX = rowRect.width - btnRect.width;
+  const maxY = rowRect.height - btnRect.height;
+  noBtn.style.left = (Math.random() * maxX) + "px";
+  noBtn.style.top = (Math.random() * maxY) + "px";
+
+  noClickCount++;
+  const textIndex = noClickCount % noTexts.length;
+  noBtn.textContent = noTexts[textIndex];
+
+  if(noClickCount > 3){
+    noBtn.classList.remove("shake");
+    void noBtn.offsetWidth;
+    noBtn.classList.add("shake");
+  }
+  addScore(1);
+}
+
+function spawnHeart(){
+  const heart = document.createElement("div");
+  heart.className = "heart-fall";
+  heart.textContent = Math.random() > 0.5 ? "❤" : "💖";
+  heart.style.left = Math.random() * 100 + "vw";
+  heart.style.fontSize = 14 + Math.random() * 18 + "px";
+  heartsEl.appendChild(heart);
+  setTimeout(() => heart.remove(), 4500);
+}
+let heartInterval;
+function startHearts(){
+  if(heartInterval) return;
+  for(let i = 0; i < 14; i++){
+    setTimeout(spawnHeart, i * 150);
+  }
+  heartInterval = setInterval(spawnHeart, 260);
+}
+
+function showLove(){
+  resultEl.style.display = "block";
+  psychoEl.style.display = "block";
+  resultEl.textContent =
+    "Biliyordum, Yaren yine kalbimden yana seçecek dedim. 💍";
+  document.title = "Yaren & Kaan ✔";
+}
+
+yesBtn.addEventListener("click", () => {
+  yesBtn.disabled = true;
+  noBtn.disabled = true;
+  yesBtn.textContent = "EVET dedin, kayıt altına alındı 😎";
+  noBtn.style.display = "none";
+
+  startHearts();
+  showLove();
+  popup.classList.add("show");
+  allowCursorHearts = true;
+  addScore(50);
+
+  // Titreşim
+  if (navigator.vibrate) {
+    navigator.vibrate([160,50,120]);
+  }
+
+  // Player başlasın
+  audio.play();
+  playBtn.textContent = "⏸";
+  eq.style.opacity = 1;
+  playing = true;
+
+  // Love timer
+  yesTime = new Date();
+  if (timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    if (!yesTime) return;
+    const diff = Math.floor((new Date() - yesTime)/1000);
+    const m = Math.floor(diff/60);
+    const s = diff%60;
+    timerEl.textContent = `EVET anından beri: ${m} dk ${s < 10 ? "0"+s : s} sn geçti.`;
+  }, 1000);
+});
+
+popupOk.addEventListener("click", () => {
+  popup.classList.remove("show");
+});
+
+// Hayır butonu kaçma
+noBtn.addEventListener("mouseover", moveNoButton);
+noBtn.addEventListener("click", moveNoButton);
+
+// ---- Mouse kalpleri + parallax ----
+document.addEventListener("mousemove", (e) => {
+  // Parallax background
+  const x = (e.clientX / window.innerWidth - 0.5) * 8;
+  const y = (e.clientY / window.innerHeight - 0.5) * 8;
+  document.documentElement.style.setProperty("--bg-x", 50 + x + "%");
+  document.documentElement.style.setProperty("--bg-y", 50 + y + "%");
+
+  if (!allowCursorHearts) return;
+  if (Math.random() > 0.15) return;
+  const h = document.createElement("div");
+  h.className = "cursor-heart";
+  h.textContent = Math.random() > 0.5 ? "❤" : "💖";
+  h.style.left = e.clientX + "px";
+  h.style.top = e.clientY + "px";
+  document.body.appendChild(h);
+  setTimeout(() => h.remove(), 900);
+});
+
+// ---- Kaan Paneli ----
+const adminToggle = document.getElementById("adminToggle");
+const adminPanel = document.getElementById("adminPanel");
+const moodText = document.getElementById("moodText");
+const moodDisplay = document.getElementById("moodDisplay");
+
+adminToggle.addEventListener("click", () => {
+  adminPanel.classList.toggle("show");
+});
+
+adminPanel.addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-mood]");
+  if(!btn) return;
+  const mood = btn.getAttribute("data-mood");
+  moodText.textContent = "Seçildi: " + mood;
+  moodDisplay.textContent = "Bugünkü Yaren modu: " + mood;
+  addScore(5);
+});
+</script>
+</body>
+</html>
+
+app.get("/", (req,res)=>{
+    res.send("ok");
+});
+app.listen(3000, ()=>
+    console.log("Server is running on port 3000")
+);
+app.use(express.static("public"));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cors());
+   // index.html

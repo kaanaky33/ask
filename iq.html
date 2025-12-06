@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Yaren IQ Testi</title>
+  <style>
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:system-ui,"Segoe UI",sans-serif;
+    }
+    body{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#020617;
+      color:#f9fafb;
+      overflow:hidden;
+      position:relative;
+      padding:20px;
+    }
+    /* İstersen bg.jpg koy, yoksa sadece gradient çalışır */
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      background:
+        linear-gradient(135deg,#0f172a,#020617 40%,#111827 70%,#020617);
+      opacity:0.9;
+      z-index:-2;
+    }
+    body::after{
+      content:"";
+      position:fixed;
+      inset:0;
+      background:
+        radial-gradient(circle at top,rgba(248,113,113,0.3),transparent 55%),
+        radial-gradient(circle at bottom,rgba(56,189,248,0.25),transparent 55%);
+      z-index:-1;
+    }
+
+    .card{
+      width:100%;
+      max-width:480px;
+      background:rgba(15,23,42,0.95);
+      border-radius:24px;
+      padding:22px 20px 18px;
+      box-shadow:0 24px 70px rgba(0,0,0,0.85);
+      border:1px solid rgba(148,163,184,0.6);
+    }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      font-size:.75rem;
+      padding:3px 9px;
+      border-radius:999px;
+      background:rgba(248,113,113,0.12);
+      color:#fecaca;
+      margin-bottom:8px;
+    }
+    .badge span.heart{animation:pulse 1s infinite;}
+    .title{
+      font-size:1.3rem;
+      font-weight:600;
+      margin-bottom:4px;
+    }
+    .subtitle{
+      font-size:.82rem;
+      opacity:.8;
+      margin-bottom:14px;
+    }
+    .progress-wrap{
+      margin-bottom:14px;
+    }
+    .progress-label{
+      font-size:.72rem;
+      opacity:.8;
+      margin-bottom:4px;
+      display:flex;
+      justify-content:space-between;
+    }
+    .progress-bar{
+      width:100%;
+      height:6px;
+      border-radius:999px;
+      background:#020617;
+      overflow:hidden;
+    }
+    .progress-fill{
+      width:0%;
+      height:100%;
+      border-radius:999px;
+      background:linear-gradient(90deg,#ec4899,#f97316);
+      transition:width .2s;
+    }
+    .question{
+      margin-bottom:14px;
+      padding:10px 10px 8px;
+      border-radius:14px;
+      background:rgba(15,23,42,0.85);
+      border:1px solid rgba(51,65,85,0.9);
+    }
+    .q-text{
+      font-size:.9rem;
+      margin-bottom:6px;
+    }
+    .options{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      font-size:.8rem;
+    }
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:4px;
+      padding:4px 8px;
+      border-radius:999px;
+      border:1px solid rgba(71,85,105,0.9);
+      cursor:pointer;
+      opacity:.9;
+      user-select:none;
+    }
+    .chip input{
+      display:none;
+    }
+    .chip span.bullet{
+      font-size:.65rem;
+      opacity:.8;
+    }
+    .chip.selected{
+      background:linear-gradient(135deg,#ec4899,#f97316);
+      border-color:transparent;
+      color:#0b1120;
+      font-weight:600;
+    }
+
+    .btn{
+      margin-top:6px;
+      width:100%;
+      padding:10px 16px;
+      border-radius:999px;
+      border:none;
+      background:linear-gradient(135deg,#22c55e,#16a34a);
+      color:#022c22;
+      font-size:.9rem;
+      font-weight:600;
+      cursor:pointer;
+      box-shadow:0 14px 40px rgba(34,197,94,0.4);
+      transition:.15s;
+    }
+    .btn:active{transform:scale(.97);}
+
+    .hint{
+      margin-top:8px;
+      font-size:.75rem;
+      opacity:.75;
+    }
+
+    .result{
+      display:none;
+      margin-top:10px;
+      padding:12px 10px 8px;
+      border-radius:16px;
+      background:rgba(15,23,42,0.9);
+      border:1px solid rgba(248,113,113,0.6);
+    }
+    .result-title{
+      font-size:1.05rem;
+      margin-bottom:6px;
+    }
+    .result-big{
+      font-size:1.25rem;
+      font-weight:700;
+      color:#fb7185;
+      margin-bottom:4px;
+    }
+    .result-text{
+      font-size:.85rem;
+      opacity:.9;
+    }
+    .result-mini{
+      margin-top:6px;
+      font-size:.8rem;
+      opacity:.8;
+    }
+
+    @keyframes pulse{
+      0%,100%{transform:scale(1);}
+      50%{transform:scale(1.25);}
+    }
+    @media(max-width:480px){
+      .card{padding-inline:16px;}
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="badge">
+      <span class="heart">❤</span>
+      <span>Yaren IQ Testi (tamamen taraflı)</span>
+    </div>
+
+    <div class="title">Yaren’in Gizli IQ Testi</div>
+    <div class="subtitle">Cevaplar ne olursa olsun, beyninin merkezine bakacağız. 🧠</div>
+
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span>Test durumu</span>
+        <span id="progressText">0 / 4</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+    </div>
+
+    <!-- Sorular -->
+    <div class="question" data-q="1">
+      <div class="q-text">1. En çok neyi düşünüyorsun?</div>
+      <div class="options">
+        <label class="chip">
+          <input type="radio" name="q1" value="a">
+          <span class="bullet">●</span><span>Kendimi</span>
+        </label>
+        <label class="chip">
+          <input type="radio" name="q1" value="b">
+          <span class="bullet">●</span><span>Geleceği</span>
+        </label>
+        <label class="chip">
+          <input type="radio" name="q1" value="c">
+          <span class="bullet">●</span><span>Uykuyu</span>
+        </label>
+        <label class="chip">
+          <input type="radio" name="q1" value="d">
+          <span class="bullet">●</span><span>“Kaan şimdi ne yapıyor?”</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="question" data-q="2">
+      <div class="q-text">2. Telefonun % kaçında Kaan vardır?</div>
+      <div class="options">
+        <label class="chip">
+          <input type="radio" name="q2" value="a">
+          <span class="bullet">●</span><span>%10</span>
+        </label>
+        <label class="chip">
+          <input type="radio" name="q2" value="b">
+          <span class="bullet">●</span><span>%30</span>
+        </label>
+        <label class="chip">
+          <input type="radio" name="q2" value="c">
+          <span class="bullet">●</span><span>%51</span>
+        </label>
+        <label class="chip">
+          <input type="radio" name="q2" value="d">
+          <span class="bullet">●</span><span>%90 ve üstü (dürüst ol)</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="question" data-q="3">
+      <div class="q-text">3. Kaan yazmayınca beynin ne diyor?</div>
+      <div class="options">
+        <label class="chip">
+          <input type="radio" name="q3" value="a">
+          <span class="bullet">●</span><span>“O da hayatını yaşıyor.”</span>
+        </label>
+        <label class="chip">
+          <input type="radio" name="q3" value="b">
+          <span class="bullet">●</span><span>“Ben de yazmam.”</span>
+        </label>
+        <label class="chip">
+          <input type="radio" name="q3" value="c">
+          <span class="bullet">●</span><span>“Kesin uyudu.”</span>
+        </label>
+        <label class="chip">
+          <input type="radio" name="q3" value="d">
+          <span class="bullet">●</span><span>“Niye yazmıyor lan?”</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="question" data-q="4">
+      <div class="q-text">4. IQ’nun merkezinde hangi kelime yazıyor?</div>
+      <div class="options">
+        <label class="chip">
+          <input type="radio" name="q4" value="a">
+          <span class="bullet">●</span><span>Para</span>
+        </label>
+        <label class="chip">
+          <input type="radio" name="q4" value="b">
+          <span class="bullet">●</span><span>Uyku</span>
+        </label>
+        <label class="chip">
+          <input type="radio" name="q4" value="c">
+          <span class="bullet">●</span><span>Drama</span>
+        </label>
+        <label class="chip">
+          <input type="radio" name="q4" value="d">
+          <span class="bullet">●</span><span>Kaan (it itiraf et)</span>
+        </label>
+      </div>
+    </div>
+
+    <button class="btn" id="submitBtn">IQ’yu Hesapla</button>
+    <div class="hint" id="hint">Tüm soruları işaretle, yoksa sistem trip atar.</div>
+
+    <!-- Sonuç -->
+    <div class="result" id="resultBox">
+      <div class="result-title">Sonuç hazır. Yalan söylemeye gerek yok…</div>
+      <div class="result-big">IQ Merkezi: Kaan 💘</div>
+      <div class="result-text">
+        Cevapların ne olursa olsun beyninde sabit duran bir şey var:
+        <strong>Kaan.</strong> Düşünceler, planlar, tripler, kıskançlıklar,
+        gece kafayı yastığa koyunca aklına gelen son kişi bile aynı.
+      </div>
+      <div class="result-mini">
+        Resmî rapor: Yaren’in IQ’su yüksek, ama <strong>RAM</strong>’i
+        sürekli Kaan’ı çalıştırıyor. Güncelleme kaldırılamaz. 😈
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const chips = document.querySelectorAll(".chip");
+    const progressFill = document.getElementById("progressFill");
+    const progressText = document.getElementById("progressText");
+    const submitBtn = document.getElementById("submitBtn");
+    const hint = document.getElementById("hint");
+    const resultBox = document.getElementById("resultBox");
+
+    const totalQuestions = 4;
+
+    // Seçim görünümü
+    chips.forEach(chip=>{
+      chip.addEventListener("click",()=>{
+        const input = chip.querySelector("input");
+        if(!input) return;
+        const name = input.name;
+        document
+          .querySelectorAll(`input[name="${name}"]`)
+          .forEach(i => i.parentElement.classList.remove("selected"));
+        chip.classList.add("selected");
+        input.checked = true;
+        updateProgress();
+      });
+    });
+
+    function updateProgress(){
+      let answered = 0;
+      for(let i=1;i<=totalQuestions;i++){
+        if(document.querySelector(`input[name="q${i}"]:checked`)) answered++;
+      }
+      const percent = (answered / totalQuestions) * 100;
+      progressFill.style.width = percent + "%";
+      progressText.textContent = `${answered} / ${totalQuestions}`;
+    }
+
+    submitBtn.addEventListener("click",()=>{
+      let allAnswered = true;
+      for(let i=1;i<=totalQuestions;i++){
+        if(!document.querySelector(`input[name="q${i}"]:checked`)){
+          allAnswered = false;
+          break;
+        }
+      }
+      if(!allAnswered){
+        hint.textContent = "Tüm soruları işaretle; tam analiz yapalım. 🙄";
+        hint.style.color = "#fca5a5";
+        return;
+      }
+
+      hint.textContent = "Analiz tamamlandı. Sonuç biraz taraflı olabilir. 😌";
+      hint.style.color = "#a5b4fc";
+      resultBox.style.display = "block";
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Kayıtlara işlendi ✔";
+      document.title = "Yaren IQ Testi: Kaan bulundu";
+    });
+  </script>
+</body>
+</html>
